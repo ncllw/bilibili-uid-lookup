@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="输入哔哩哔哩 UID 或个人空间链接，查询对应昵称。">
+  <title>Bili 查名 · UID 昵称查询</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Bili 查名首页"><span class="brand-icon" aria-hidden="true">b.</span><span>Bili 查名</span></a>
+    <span class="local"><i></i> 本地运行</span>
+  </header>
+  <main>
+    <div class="intro">
+      <span class="eyebrow">BILIBILI UID FINDER</span>
+      <h1>从 UID，找到<span>名字。</span></h1>
+      <p>输入一串数字，或粘贴个人空间链接。<br class="mobile-break">想找的昵称，就在这里。</p>
+    </div>
+
+    <section class="search-card" aria-label="查询昵称">
+      <form id="lookup-form" novalidate>
+        <label for="uid-input">UID / 个人空间链接</label>
+        <div class="input-row">
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            <input id="uid-input" name="uid" type="text" placeholder="例如 306936843" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2048" aria-describedby="input-hint error-message">
+            <button class="clear-input" id="clear-input" type="button" aria-label="清空输入" hidden>×</button>
+          </div>
+          <button class="primary" id="lookup-button" type="submit"><span id="button-label">查询昵称</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+        <div class="input-hint" id="input-hint"><span>也支持 https://space.bilibili.com/UID</span><button id="example" type="button">试试示例 <span>306936843 ↗</span></button></div>
+      </form>
+      <div class="error" id="error-message" role="alert" hidden></div>
+    </section>
+
+    <section class="result-card" id="result" aria-label="查询结果" aria-live="polite" hidden>
+      <div class="result-top"><span class="section-label"><i></i> 找到这位用户</span><span id="result-time"></span></div>
+      <div class="profile">
+        <div class="avatar-wrap"><div id="avatar-fallback" class="avatar-fallback" aria-hidden="true">b.</div><img id="avatar" alt="用户头像" referrerpolicy="no-referrer" hidden></div>
+        <div class="profile-main"><div class="name-row"><h2 id="nickname"></h2><span class="level" id="level" hidden></span></div><div class="uid-line">UID <span id="result-uid"></span><button type="button" class="icon-button" id="copy-uid" aria-label="复制 UID"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/></svg></button></div></div>
+        <button type="button" id="copy-name" class="copy-name"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/></svg>复制昵称</button>
+      </div>
+      <p class="official" id="official" hidden></p>
+      <p class="sign" id="sign" hidden></p>
+      <div class="result-bottom"><span id="followers"></span><a id="space-link" target="_blank" rel="noopener noreferrer">打开 TA 的空间 <span>↗</span></a></div>
+    </section>
+
+    <section class="empty-card" id="empty-state" aria-label="等待查询">
+      <div class="empty-art" aria-hidden="true"><svg viewBox="0 0 104 80"><path d="m34 14-8-10m39 10 8-10"/><rect x="12" y="16" width="80" height="53" rx="15"/><path d="m32 37 5-3m29 0 5 3M40 52q12 9 24 0"/><circle cx="84" cy="60" r="16"/><path d="m96 72 7 7M84 53v14m-7-7h14"/></svg></div>
+      <h2>每个 UID，都有一个名字</h2>
+      <p>查询结果会显示在这里</p>
+    </section>
+
+    <section class="history-section" id="history-section" hidden>
+      <div class="history-heading"><h2>最近查询 <span id="history-count"></span></h2><button id="clear-history" type="button">清空记录</button></div>
+      <div class="history-list" id="history-list"></div>
+      <p class="history-note">仅保存在当前浏览器，点击记录可重新查询。</p>
+    </section>
+
+    <div class="notes"><span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 3 5v5q0 5 7 8 7-3 7-8V5ZM7 10l2 2 4-4"/></svg>无需登录</span><i></i><span>直接查询公开昵称</span><i></i><span>5 分钟查询缓存</span></div>
+  </main>
+  <footer><span>Bili 查名</span><span>一个简单的昵称查询工具 · 非哔哩哔哩官方产品</span></footer>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
