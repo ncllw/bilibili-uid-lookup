@@ -137,8 +137,18 @@ def lookup(value: str) -> dict:
         return {**result, "cached": False}
 
 
+class LocalHTTPServer(ThreadingHTTPServer):
+    # On Windows, SO_REUSEADDR can let two processes bind the same port.
+    allow_reuse_address = False
+
+    def server_bind(self):
+        if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 class Handler(BaseHTTPRequestHandler):
-    server_version = "BiliUID/1.0"
+    server_version = "BiliUID/1.1.0"
 
     def send_content(self, content: bytes, content_type: str, status: int = 200):
         self.send_response(status)
@@ -162,7 +172,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         path = urlsplit(self.path)
         if path.path == "/api/health":
-            self.send_json({"app": "bilibili-uid-lookup", "version": "1.0"})
+            self.send_json({"app": "bilibili-uid-lookup", "version": "1.1.0"})
         elif path.path == "/api/user":
             try:
                 value = parse_qs(path.query).get("uid", [""])[0]
@@ -191,7 +201,7 @@ def main():
     args = parser.parse_args()
     url = f"http://127.0.0.1:{args.port}"
     try:
-        server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+        server = LocalHTTPServer(("127.0.0.1", args.port), Handler)
     except OSError:
         # A second double-click should reopen the existing app.
         try:

@@ -6,3 +6,6 @@ test-results/
 .venv/
 venv/
 *.log
+build/
+dist/
+*.spec

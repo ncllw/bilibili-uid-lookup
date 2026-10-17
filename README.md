@@ -6,6 +6,10 @@
 
 ## 下载
 
+**不想安装 Python：** 到 [Releases 下载 Windows 免安装版](https://github.com/ncllw/bilibili-uid-lookup/releases/latest)，完整解压后双击 `BiliUidLookup.exe`。
+
+**下载 Python 源码版：**
+
 在 GitHub 仓库页面点击 **Code → Download ZIP**，解压后启动；也可使用 Git：
 
 ```powershell
@@ -14,6 +18,16 @@ cd bilibili-uid-lookup
 ```
 
 ## 启动
+
+### Windows 免安装版
+
+便携版适用于 **Windows 10/11 64 位**。将便携 ZIP 完整解压，双击其中的 **BiliUidLookup.exe**，无需安装 Python。可将解压后的整个文件夹复制到 U 盘运行；必须保留 `_internal` 文件夹。
+
+程序会打开一个命令窗口和浏览器查询页面。关闭命令窗口即可停止服务。仍需联网访问哔哩哔哩，无需管理员权限。
+
+便携程序没有代码签名，Windows 的应用信誉提示及杀毒软件的判断可能因电脑而异。文件夹版使用 `--onedir --noupx` 打包；这不保证不会误报。下载包的 SHA256 只用于核对完整性，不是安全认证。
+
+### Python 源码版
 
 双击 **start.cmd**，会启动服务并打开 `http://127.0.0.1:18763`。需要 Python 3.10 或更新版本，无需安装第三方依赖。关闭启动的命令窗口即可停止服务。
 
@@ -55,3 +69,14 @@ python server.py --open
 - `web/`：无需构建的 HTML、CSS、JavaScript 界面。
 - `start.cmd`：Windows 双击启动。
 - `test_server.py`：输入校验、响应处理、缓存和 HTTP 行为测试。运行 `python -m unittest -v`。
+- `portable.py`：便携程序入口，默认自动打开浏览器，支持 `--self-test` 和 `--no-browser`。
+- `build_portable.py`：在 Windows 64 位 Python 环境中生成便携文件夹、ZIP 和 SHA256 校验文件。
+
+## 构建便携版
+
+```powershell
+python -m pip install -r requirements-build.txt
+python build_portable.py
+```
+
+产物位于 `dist/`，完整分发 `bilibili-uid-lookup-v1.1.0-windows-x64-portable.zip`。构建依赖只用于制作便携版，普通源码运行不需要安装依赖。

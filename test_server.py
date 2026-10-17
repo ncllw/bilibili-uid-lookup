@@ -98,7 +98,7 @@ class CacheTests(unittest.TestCase):
 class HTTPTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
+        cls.httpd = server.LocalHTTPServer(("127.0.0.1", 0), server.Handler)
         cls.thread = threading.Thread(target=cls.httpd.serve_forever, daemon=True)
         cls.thread.start()
         cls.base = f"http://127.0.0.1:{cls.httpd.server_port}"
@@ -127,6 +127,11 @@ class HTTPTests(unittest.TestCase):
         with self.assertRaises(HTTPError) as error:
             urlopen(self.base + "/server.py")
         self.assertEqual(error.exception.code, 404)
+
+    def test_second_server_cannot_share_the_port(self):
+        with self.assertRaises(OSError):
+            with server.LocalHTTPServer(("127.0.0.1", self.httpd.server_port), server.Handler):
+                pass
 
 
 if __name__ == "__main__":
