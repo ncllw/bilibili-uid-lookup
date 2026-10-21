@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parent
 API = "https://api.bilibili.com/x/web-interface/card?mid="
 CACHE_TTL = 300
 CACHE_LIMIT = 128
+VERSION = "1.2.0"
 cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
 lookup_lock = threading.Lock()
 last_request = 0.0
@@ -148,7 +149,7 @@ class LocalHTTPServer(ThreadingHTTPServer):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "BiliUID/1.1.0"
+    server_version = "BiliUID/" + VERSION
 
     def send_content(self, content: bytes, content_type: str, status: int = 200):
         self.send_response(status)
@@ -172,7 +173,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         path = urlsplit(self.path)
         if path.path == "/api/health":
-            self.send_json({"app": "bilibili-uid-lookup", "version": "1.1.0"})
+            self.send_json({"app": "bilibili-uid-lookup", "version": VERSION})
         elif path.path == "/api/user":
             try:
                 value = parse_qs(path.query).get("uid", [""])[0]
@@ -181,7 +182,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error": str(error), "code": error.code}, error.status)
             except Exception:
                 self.send_json({"error": "查询遇到异常，请稍后重试。", "code": "internal_error"}, 500)
-        elif path.path in ("/", "/index.html", "/app.js", "/style.css", "/favicon.svg"):
+        elif path.path in ("/", "/index.html", "/app.js", "/batch.js", "/style.css", "/favicon.svg"):
             name = "index.html" if path.path == "/" else path.path[1:]
             types = {".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml"}
             file = ROOT / "web" / name
@@ -208,6 +209,8 @@ def main():
             with urlopen(url + "/api/health", timeout=2) as response:
                 existing = json.load(response)
             if existing.get("app") == "bilibili-uid-lookup":
+                if existing.get("version") != VERSION:
+                    raise SystemExit("An older Bili UID Lookup is still running. Close its command window, then start this version again.")
                 if args.open:
                     webbrowser.open(url)
                 return

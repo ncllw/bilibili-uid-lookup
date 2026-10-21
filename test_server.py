@@ -110,7 +110,7 @@ class HTTPTests(unittest.TestCase):
         cls.thread.join()
 
     def test_ui_assets_and_health(self):
-        for path in ("/", "/app.js", "/style.css", "/favicon.svg", "/api/health"):
+        for path in ("/", "/app.js", "/batch.js", "/style.css", "/favicon.svg", "/api/health"):
             with urlopen(self.base + path) as result:
                 self.assertEqual(result.status, 200)
                 self.assertTrue(result.read())
@@ -132,6 +132,27 @@ class HTTPTests(unittest.TestCase):
         with self.assertRaises(OSError):
             with server.LocalHTTPServer(("127.0.0.1", self.httpd.server_port), server.Handler):
                 pass
+
+
+class LaunchTests(unittest.TestCase):
+    @patch("server.webbrowser.open")
+    @patch("server.urlopen")
+    @patch("server.LocalHTTPServer", side_effect=OSError("occupied"))
+    def test_old_version_is_not_silently_reopened(self, server_mock, open_mock, browser_mock):
+        open_mock.return_value = response({"app": "bilibili-uid-lookup", "version": "1.1.0"})
+        with patch("sys.argv", ["server.py", "--open"]), self.assertRaises(SystemExit) as error:
+            server.main()
+        self.assertIn("older", str(error.exception))
+        browser_mock.assert_not_called()
+
+    @patch("server.webbrowser.open")
+    @patch("server.urlopen")
+    @patch("server.LocalHTTPServer", side_effect=OSError("occupied"))
+    def test_current_version_can_be_reopened(self, server_mock, open_mock, browser_mock):
+        open_mock.return_value = response({"app": "bilibili-uid-lookup", "version": server.VERSION})
+        with patch("sys.argv", ["server.py", "--open"]):
+            server.main()
+        browser_mock.assert_called_once_with("http://127.0.0.1:18763")
 
 
 if __name__ == "__main__":

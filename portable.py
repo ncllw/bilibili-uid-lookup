@@ -10,7 +10,7 @@ import server
 
 
 def self_test() -> None:
-    assets = ["index.html", "app.js", "style.css", "favicon.svg"]
+    assets = ["index.html", "app.js", "batch.js", "style.css", "favicon.svg"]
     for asset in assets:
         file = server.ROOT / "web" / asset
         if not file.is_file() or not file.stat().st_size:

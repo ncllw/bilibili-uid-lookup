@@ -10,7 +10,7 @@ import sys
 import zipfile
 
 PROJECT = Path(__file__).resolve().parent
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 NAME = "BiliUidLookup"
 
 
