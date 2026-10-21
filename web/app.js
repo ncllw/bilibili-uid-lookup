@@ -102,6 +102,8 @@ async function query() {
     return;
   }
   busy = true;
+  $("mode-single").disabled = true;
+  $("mode-batch").disabled = true;
   $("lookup-button").disabled = true;
   $("button-label").textContent = "查询中…";
   $("example").disabled = true;
@@ -122,6 +124,8 @@ async function query() {
   } finally {
     clearTimeout(timer);
     busy = false;
+    $("mode-single").disabled = false;
+    $("mode-batch").disabled = false;
     $("lookup-button").disabled = false;
     $("button-label").textContent = "查询昵称";
     $("example").disabled = false;

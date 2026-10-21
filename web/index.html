@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="输入哔哩哔哩 UID 或个人空间链接，查询对应昵称。">
+  <meta name="description" content="逐行粘贴哔哩哔哩 UID 或个人空间链接，批量查询对应昵称并复制、导出结果。">
   <title>Bili 查名 · UID 昵称查询</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
+  <script src="/batch.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -18,11 +19,15 @@
     <div class="intro">
       <span class="eyebrow">BILIBILI UID FINDER</span>
       <h1>从 UID，找到<span>名字。</span></h1>
-      <p>输入一串数字，或粘贴个人空间链接。<br class="mobile-break">想找的昵称，就在这里。</p>
+      <p>输入一个 UID，或粘贴整列 UID。<br class="mobile-break">对应昵称，按顺序为你列好。</p>
     </div>
 
     <section class="search-card" aria-label="查询昵称">
-      <form id="lookup-form" novalidate>
+      <div class="mode-switch" role="group" aria-label="查询模式">
+        <button type="button" id="mode-single" aria-pressed="false">单个查询</button>
+        <button type="button" id="mode-batch" aria-pressed="true">批量查询</button>
+      </div>
+      <form id="lookup-form" novalidate hidden>
         <label for="uid-input">UID / 个人空间链接</label>
         <div class="input-row">
           <div class="input-wrap">
@@ -35,8 +40,29 @@
         <div class="input-hint" id="input-hint"><span>也支持 https://space.bilibili.com/UID</span><button id="example" type="button">试试示例 <span>306936843 ↗</span></button></div>
       </form>
       <div class="error" id="error-message" role="alert" hidden></div>
+      <form id="batch-form" novalidate>
+        <div class="batch-input-heading"><label for="batch-input">每行一个 UID / 个人空间链接</label><span id="batch-input-count">0 / 200 条</span></div>
+        <textarea id="batch-input" name="uids" rows="7" placeholder="10331033&#10;10341034&#10;10351035&#10;或 https://space.bilibili.com/306936843" spellcheck="false" autocapitalize="off" maxlength="100000" aria-describedby="batch-hint batch-error"></textarea>
+        <div class="batch-input-footer"><span id="batch-hint">最多 200 条 · 保留输入顺序和重复项</span><div><button type="button" id="batch-example" class="text-button">填入 18 条示例</button><button type="button" id="batch-clear" class="text-button">清空</button></div></div>
+        <div class="batch-actions"><button class="primary" id="batch-start" type="submit">开始批量查询</button><button type="button" id="batch-stop" class="secondary" hidden>停止查询</button><span class="batch-rate-note">逐条查询，结果实时显示</span></div>
+      </form>
+      <div class="error" id="batch-error" role="alert" hidden></div>
     </section>
 
+    <div id="batch-output">
+      <section id="batch-empty" class="empty-card" aria-label="等待批量查询"><div class="batch-empty-symbol" aria-hidden="true">UID <span>→</span> 昵称</div><h2>把一列 UID，变成一列名字</h2><p>粘贴列表后，点击“开始批量查询”</p></section>
+      <section class="batch-results" id="batch-results" aria-label="批量查询结果" hidden>
+        <div class="batch-results-heading"><h2>批量结果 <span id="batch-total"></span></h2><button type="button" class="text-button" id="batch-retry" disabled>重试未成功项</button></div>
+        <div class="batch-progress-line" id="batch-progress-text" role="status" aria-live="polite">等待开始</div>
+        <progress id="batch-progress" value="0" max="1" aria-label="批量查询进度"></progress>
+        <p id="batch-notice" class="batch-notice" role="status" hidden></p>
+        <div class="batch-exports"><button type="button" class="secondary" id="batch-copy" disabled>复制 UID＋昵称</button><button type="button" class="secondary" id="batch-copy-names" disabled>只复制昵称</button><button type="button" class="secondary" id="batch-export" disabled>导出 CSV</button></div>
+        <div class="batch-table-wrap"><table class="batch-table"><thead><tr><th scope="col">序号</th><th scope="col">UID</th><th scope="col">昵称 / 查询说明</th><th scope="col">状态</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
+        <p class="batch-table-note">空行自动忽略。查询失败或未查询的行会保留占位，复制和导出时不会错位。</p>
+      </section>
+    </div>
+
+    <div id="single-output" hidden>
     <section class="result-card" id="result" aria-label="查询结果" aria-live="polite" hidden>
       <div class="result-top"><span class="section-label"><i></i> 找到这位用户</span><span id="result-time"></span></div>
       <div class="profile">
@@ -60,6 +86,7 @@
       <div class="history-list" id="history-list"></div>
       <p class="history-note">仅保存在当前浏览器，点击记录可重新查询。</p>
     </section>
+    </div>
 
     <div class="notes"><span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 3 5v5q0 5 7 8 7-3 7-8V5ZM7 10l2 2 4-4"/></svg>无需登录</span><i></i><span>直接查询公开昵称</span><i></i><span>5 分钟查询缓存</span></div>
   </main>
